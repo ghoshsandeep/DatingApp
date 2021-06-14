@@ -36,14 +36,28 @@ namespace API
                 options.UseSqlite(_config.GetConnectionString("DefaultConnection"));
             });
 
+            services.AddCors();
+            // services.AddCors(c =>  
+            // {  
+            //     c.AddPolicy("AllowOrigin", options => options.WithOrigins("https://localhost:4200"));  
+            // });  
             services.AddControllers();
+            
+            // services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            //     {
+            //         builder.AllowAnyOrigin()
+            //         .AllowAnyMethod()
+            //         .AllowAnyHeader()
+            //         .WithOrigins("http://localhost:4200");
+            //     }));
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
             });
-
             
+            
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,8 +71,21 @@ namespace API
             }
 
             app.UseHttpsRedirection();
-
+            //app.UseCors(x =>x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
             app.UseRouting();
+            app.UseCors(x =>x.AllowAnyHeader().AllowAnyMethod()
+            .WithOrigins("http://localhost:4200"));
+            //
+            //app.UseCors("MyPolicy");
+            /*app.UseCors(
+                options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("http://localhost:4200")
+            );*/
+            /*app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials()); // allow credentials*/
+                //app.UseCors(options=>options.WithOrigins("https://localhost:4200"));
 
             app.UseAuthorization();
 

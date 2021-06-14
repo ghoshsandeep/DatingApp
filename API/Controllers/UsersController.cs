@@ -5,11 +5,13 @@ using API.Entities;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    //[EnableCors("AllowOrigin")]
     public class UsersController : ControllerBase
     {
         private readonly DataContext _context;
@@ -17,6 +19,7 @@ namespace API.Controllers
         {
             this._context = context;
         }
+       
         [HttpGet]
         // public ActionResult<IEnumerable<AppUser>> GetUsers(){
             
