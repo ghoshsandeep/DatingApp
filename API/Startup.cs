@@ -15,6 +15,11 @@ using Microsoft.EntityFrameworkCore;
 using API.Data;
 using Microsoft.EntityFrameworkCore.Sqlite;
 using API.Entities;
+using API.Interface;
+using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace API
 {
@@ -31,25 +36,28 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<ITokenService,TokenService>();
             services.AddDbContext<DataContext>(options =>
             {
                 options.UseSqlite(_config.GetConnectionString("DefaultConnection"));
             });
 
             services.AddCors();
-            // services.AddCors(c =>  
-            // {  
-            //     c.AddPolicy("AllowOrigin", options => options.WithOrigins("https://localhost:4200"));  
-            // });  
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters =new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey=true,
+                    IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Token"])),
+                    ValidateIssuer=false,
+                    ValidateAudience=false
+                };
+            });
+              
             services.AddControllers();
             
-            // services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
-            //     {
-            //         builder.AllowAnyOrigin()
-            //         .AllowAnyMethod()
-            //         .AllowAnyHeader()
-            //         .WithOrigins("http://localhost:4200");
-            //     }));
+           
 
             services.AddSwaggerGen(c =>
             {
@@ -71,22 +79,12 @@ namespace API
             }
 
             app.UseHttpsRedirection();
-            //app.UseCors(x =>x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
+            
             app.UseRouting();
             app.UseCors(x =>x.AllowAnyHeader().AllowAnyMethod()
             .WithOrigins("http://localhost:4200"));
-            //
-            //app.UseCors("MyPolicy");
-            /*app.UseCors(
-                options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("http://localhost:4200")
-            );*/
-            /*app.UseCors(x => x
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .SetIsOriginAllowed(origin => true) // allow any origin
-                .AllowCredentials()); // allow credentials*/
-                //app.UseCors(options=>options.WithOrigins("https://localhost:4200"));
-
+            
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
